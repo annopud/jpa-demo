@@ -2,6 +2,7 @@ package dev.annopud.jpa_demo.service;
 
 import dev.annopud.jpa_demo.entity.Client;
 import dev.annopud.jpa_demo.entity.Customer;
+import dev.annopud.jpa_demo.listener.LoggingListener.LoggingEvent;
 import dev.annopud.jpa_demo.repository.ClientRepository;
 import dev.annopud.jpa_demo.repository.CustomerRepository;
 import jakarta.persistence.EntityManager;
@@ -9,7 +10,10 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 
@@ -19,13 +23,22 @@ public class CustomerService {
     static final Logger log = LoggerFactory.getLogger(CustomerService.class);
     private final CustomerRepository customerRepository;
     private final ClientRepository clientRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    @Value("${spring.application.version:}")
+    private String version;
+
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    public CustomerService(CustomerRepository customerRepository, ClientRepository clientRepository) {
+    public CustomerService(
+        CustomerRepository customerRepository,
+        ClientRepository clientRepository,
+        ApplicationEventPublisher eventPublisher
+    ) {
         this.customerRepository = customerRepository;
         this.clientRepository = clientRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -70,7 +83,10 @@ public class CustomerService {
 //        List<Customer> result = customerRepository.findByLastName(ctm.getLastName());
 //        Client result = clientRepository.findById(1);
         Client result = clientRepository.findByIdNative(1);
-        log.info("end of task2");
+        log.info("end of task2 {}, {}", version, TransactionAspectSupport.currentTransactionStatus().getTransactionName());
+        LoggingEvent loggingEvent = new LoggingEvent("logging message");
+        eventPublisher.publishEvent(new AuditLogService.CreateSuccessEvent("success"));
+        eventPublisher.publishEvent(loggingEvent);
         log.info("7------------------------------------------------");
     }
 

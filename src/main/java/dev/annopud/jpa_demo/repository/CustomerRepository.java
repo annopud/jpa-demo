@@ -20,7 +20,7 @@ public interface CustomerRepository extends CrudRepository<Customer, Long> {
              c.id,
              c.first_name,
              c.last_name
-         FROM mydatabase.customer AS c
+         FROM customer AS c
          WHERE c.id = :id"""
     )
     Customer findByIdNative(long id);
