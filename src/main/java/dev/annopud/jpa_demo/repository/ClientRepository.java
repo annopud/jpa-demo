@@ -1,7 +1,7 @@
 package dev.annopud.jpa_demo.repository;
 
 import dev.annopud.jpa_demo.entity.Client;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
@@ -12,15 +12,12 @@ public interface ClientRepository extends CrudRepository<Client, Long> {
 
     Client findById(long id);
 
-    @Query(
-        nativeQuery = true,
-        value = """
+    @NativeQuery("""
          SELECT 
              c.id,
              c.first_name,
              c.last_name
          FROM client AS c
-         WHERE c.id = :id"""
-    )
+         WHERE c.id = :id""")
     Client findByIdNative(long id);
 }
