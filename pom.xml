@@ -8,7 +8,7 @@
         <version>3.5.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>dev.annopud</groupId>Ï
+    <groupId>dev.annopud</groupId>
     <artifactId>jpa-demo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>jpa-demo</name>
