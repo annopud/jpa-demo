@@ -2,11 +2,24 @@
 
 This demo application illustrates how the `@org.springframework.transaction.annotation.Transactional` annotation works in different scenarios, particularly focusing on `Propagation.REQUIRED` and `Propagation.NESTED`, and demonstrating transaction rollback behaviors and scope.
 
+## ⚠️ Important Note About NESTED Propagation
+
+**NESTED propagation has limited support with JPA/Hibernate:**
+- JpaTransactionManager with Hibernate's JpaDialect does NOT fully support JDBC savepoints
+- While `setNestedTransactionAllowed(true)` can be set, Hibernate's JpaDialect may still reject savepoint operations
+- Some NESTED scenarios (3, 7) may fail with "JpaDialect does not support savepoints" error
+- REQUIRED propagation scenarios (1, 2, 5, 6) work perfectly and demonstrate the core concepts
+
+**For production use:**
+- Use `Propagation.REQUIRES_NEW` instead of NESTED for true transaction isolation
+- Or use DataSourceTransactionManager with JDBC (not JPA) for full savepoint support
+- The demo includes both working (REQUIRED) and educational (NESTED) scenarios
+
 ## Overview
 
 The demo implements a REST API that exercises different transactional behaviors to show:
 - How **REQUIRED** propagation works (joins existing transaction or creates new one)
-- How **NESTED** propagation works (creates savepoints for partial rollback)
+- How **NESTED** propagation works (creates savepoints for partial rollback) - *with limitations noted above*
 - When transactions are rolled back vs committed
 - The effect of transaction scope and savepoint management
 - Important Spring transaction caveats (proxy/self-invocation, visibility, etc.)
@@ -220,25 +233,28 @@ Use the H2 console or the `/tx-demo/records` endpoint to verify actual committed
 
 ## Summary of Results
 
-| Scenario | Propagation | Exception Handling | Records Committed |
-|----------|-------------|-------------------|-------------------|
-| 1 | REQUIRED | Uncaught | 0 (full rollback) |
-| 2 | REQUIRED | Caught | 0 (rollback-only) |
-| 3 | NESTED | Caught | 2 (savepoint rollback) |
-| 4 | NESTED | Uncaught | 0 (full rollback) |
-| 5 | REQUIRED | setRollbackOnly | 0 (rollback-only) |
-| 6 | REQUIRED | No exception | 2 (all committed) |
-| 7 | NESTED | No exception | 2 (all committed) |
+| Scenario | Propagation | Exception Handling | Records Committed | Status |
+|----------|-------------|-------------------|-------------------|---------|
+| 1 | REQUIRED | Uncaught | 0 (full rollback) | ✅ Works |
+| 2 | REQUIRED | Caught | 0 (rollback-only) | ✅ Works |
+| 3 | NESTED | Caught | 2 (savepoint rollback) | ⚠️ May fail with JPA |
+| 4 | NESTED | Uncaught | 0 (full rollback) | ⚠️ May fail with JPA |
+| 5 | REQUIRED | setRollbackOnly | 0 (rollback-only) | ✅ Works |
+| 6 | REQUIRED | No exception | 2 (all committed) | ✅ Works |
+| 7 | NESTED | No exception | 2 (all committed) | ⚠️ May fail with JPA |
+
+**Note:** NESTED scenarios (3, 4, 7) may fail with "JpaDialect does not support savepoints" when using JpaTransactionManager with Hibernate. This is a known limitation. The REQUIRED scenarios (1, 2, 5, 6) fully demonstrate transaction propagation concepts.
 
 ## Key Takeaways
 
-1. **REQUIRED** joins existing transactions - failures affect the entire transaction
-2. **NESTED** uses savepoints - allows partial rollback when exceptions are caught
-3. Catching an exception in REQUIRED doesn't prevent rollback if transaction is marked rollback-only
-4. `setRollbackOnly()` forces rollback regardless of exception handling
-5. Self-invocation bypasses Spring AOP - use separate beans for transactional methods
-6. NESTED requires savepoint support from the transaction manager and database
-7. By default, only unchecked exceptions trigger rollback
+1. **REQUIRED** joins existing transactions - failures affect the entire transaction ✅
+2. **NESTED** uses savepoints - allows partial rollback when exceptions are caught (has JPA/Hibernate limitations) ⚠️
+3. Catching an exception in REQUIRED doesn't prevent rollback if transaction is marked rollback-only ✅
+4. `setRollbackOnly()` forces rollback regardless of exception handling ✅
+5. Self-invocation bypasses Spring AOP - use separate beans for transactional methods ✅
+6. NESTED requires savepoint support - JpaTransactionManager/Hibernate has limited support ⚠️
+7. By default, only unchecked exceptions trigger rollback ✅
+8. For production, prefer `REQUIRES_NEW` over `NESTED` for transaction isolation ✅
 
 ## Further Reading
 
