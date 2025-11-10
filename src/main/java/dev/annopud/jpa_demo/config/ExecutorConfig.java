@@ -54,16 +54,17 @@ public class ExecutorConfig {
 //        return new VirtualThreadTaskExecutor("vt-thread-");
 //    }
 
-    @Bean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
-    public AsyncTaskExecutor asyncTaskExecutor(CurrentTraceContext currentTraceContext) {
-        ThreadFactory factory = Thread.ofVirtual()
-            .name("vt-prefix-", 10000L)
-            .factory();
-        ExecutorService executor = Executors.newThreadPerTaskExecutor(factory);
-        TaskExecutorAdapter taskExecutorAdapter = new TaskExecutorAdapter(executor);
-        taskExecutorAdapter.setTaskDecorator(currentTraceContext::wrap);
-        return taskExecutorAdapter;
-    }
+    // Commented out due to Java 21 virtual thread requirement
+//    @Bean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
+//    public AsyncTaskExecutor asyncTaskExecutor(CurrentTraceContext currentTraceContext) {
+//        ThreadFactory factory = Thread.ofVirtual()
+//            .name("vt-prefix-", 10000L)
+//            .factory();
+//        ExecutorService executor = Executors.newThreadPerTaskExecutor(factory);
+//        TaskExecutorAdapter taskExecutorAdapter = new TaskExecutorAdapter(executor);
+//        taskExecutorAdapter.setTaskDecorator(currentTraceContext::wrap);
+//        return taskExecutorAdapter;
+//    }
 
 //    @Bean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
 //    public AsyncTaskExecutor asyncTaskExecutor() {
