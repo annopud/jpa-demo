@@ -72,8 +72,7 @@ public class Client {
 
     @Override
     public String toString() {
-        return String.format(
-            "Customer[id=%d, firstName='%s', lastName='%s']",
+        return "Customer[id=%d, firstName='%s', lastName='%s']".formatted(
             id, firstName, lastName);
     }
 

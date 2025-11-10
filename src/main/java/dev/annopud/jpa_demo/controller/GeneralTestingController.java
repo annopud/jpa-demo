@@ -20,7 +20,7 @@ import java.util.List;
 
 @Validated
 @RestController
-@RequestMapping("/general-testing")
+@RequestMapping("/mypath")
 public class GeneralTestingController {
 
     @Autowired
@@ -31,12 +31,22 @@ public class GeneralTestingController {
         generalTestingService.delete(id);
     }
 
-    @GetMapping
+    @GetMapping({"", "/"})
     public List<GeneralTesting> findAll() {
         return generalTestingService.findAll();
     }
 
+    @GetMapping("/{id}")
+    public String findById(@PathVariable("id") String id) {
+        return id;
+    }
+
     @PostMapping
+    public List<GeneralTesting> findAllPost() {
+        return generalTestingService.findAll();
+    }
+
+    @PostMapping("/create")
     public GeneralTesting create(@RequestBody GeneralTesting body) {
 
         // declare offset datetime fix date
